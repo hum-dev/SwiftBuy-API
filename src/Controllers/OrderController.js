@@ -78,7 +78,7 @@ export const updateUser = async (req, res) => {
     }
   };
 
-// Delete a user
+// Delete a Order
 export const deleteUser = async (req, res) => {
     try {
       const { id } = req.params;
@@ -99,10 +99,10 @@ export const deleteUser = async (req, res) => {
       sql.close();
     }
   };
-// Register a user
+// Create order
 
-export const register = async (req, res) => {
-    const { username, password, email} = req.body;
+export const Create = async (req, res) => {
+    const { order_id, id, quantity,product_id, email, status} = req.body;
     const hashedPassword = await bcrypt.hash(password, 10); // Use asynchronous bcrypt.hash instead of bcrypt.hashSync
   
     try {
@@ -139,33 +139,5 @@ export const register = async (req, res) => {
   
 };
 
-// Login a user
-export const login = async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        let pool = await sql.connect(config.sql);
-        const result = await pool.request()
-            .input('username', sql.VarChar, username)
-            .query('SELECT * FROM Customers WHERE username = @username');
-        const user = result.recordset[0];
-        if (!user) {
-            res.status(401).json({ message: 'Authetication failed.  Wrong Credentials!' });
-        } else {
-            const isPasswordCorrect = bcrypt.compareSync(password, user.password);
-            if (!isPasswordCorrect) {
-                res.status(401).json({ message: ' Authetication failed Wrong Credentials!' });
-            } else {
-                const token = `JWT ${jwt.sign({ username: user.username, email: user.email }, config.jwt_secret, { expiresIn: '1h' })}`;
-                res.status(200).json({ email: user.email,username: user.username,id: user.id, token: token });
-            }
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Something went wrong!' });
-        console.log(error);
-    } finally {
-        sql.close();
-    }
 
-
-};
 
