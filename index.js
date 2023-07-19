@@ -2,6 +2,8 @@ import  Express  from "express";
 import bodyParser from "body-parser";
 import config from "./src/db/Config.js";
 import userRoutes from "./src/Routes/UserRoutes.js";
+import productRoutes from "./src/Routes/ProductRoute.js";
+import orderRoutes from "./src/Routes/OrderRoute.js";
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
 
@@ -29,6 +31,9 @@ app.use((req, res, next) => {
 });
 
 userRoutes(app);
+productRoutes(app);
+orderRoutes(app);
+
 
 
 

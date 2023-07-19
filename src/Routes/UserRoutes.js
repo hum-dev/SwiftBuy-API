@@ -5,7 +5,7 @@ const userRoutes = (app) => {
     .get( getUsers);
 
     
-    app.route("/user/:user_id")
+    app.route("/user/:id")
     .get(loginRequired ,getUser)
     .put( loginRequired ,updateUser)
     .delete(loginRequired , deleteUser);

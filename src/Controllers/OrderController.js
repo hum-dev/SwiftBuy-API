@@ -1,143 +1,81 @@
-import sql from 'mssql';
-import config from '../db/Config.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import sql from 'mssql'
+import config from '../db/Config.js'
 
-export const loginRequired = (req, res, next) => {
-  if (req.user) {
-    console.log(req.user);
-      next();
-  } else {    
-      return res.status(401).json({ message: 'Unauthorized user!' });
+//Get all orders
+export const getOrders = async (req, res) => {
+  try {
+      let pool = await sql.connect(config.sql);
+      const result = await pool.request().query("SELECT * FROM Orders");
+      res.status(200).json(result.recordset);
+  } catch (error) {
+      res.status(201).json({ error: 'an error occurred while retrieving orders' });
+  } finally {
+      sql.close();
   }
 };
 
-//get all users
-export const getUsers = async (req, res) => {
-    try {
-        let pool = await sql.connect(config.sql);
-        const result = await pool.request()
-            .query('SELECT * FROM Customers');
-        res.status(200).json(result.recordset);
-    }
-    catch (error) {
-        res.status(500).json({ error: 'Something went wrong!' });
-        console.log(error);
-    }
-    finally {
-        sql.close();
-    }
+//Get a single order
+export const getOrder = async (req, res) => {
+  try {
+      const { order_id } = req.params;
+      let pool = await sql.connect(config.sql);
+      const result = await pool.request()
+          .input("order_id", sql.Int, order_id)
+          .query("SELECT * FROM Orders WHERE order_id = @order_id");
+      res.status(200).json(result.recordset[0]);
+  } catch (error) {
+      res.status(500).json({ error: 'An error occurred while retrieving an order' });
+  } finally {
+      sql.close();
+  }
 };
 
-
-//get user by id
-export const getUser = async (req, res) => {
-    const { id } = req.params;
-    try {
-        let pool = await sql.connect(config.sql);
-        const result = await pool.request()
-            .input('id', sql.Int, id)
-            .query("SELECT * FROM Customers WHERE id = @id");
-        const user = result.recordset[0];
-        if (user) {
-            res.status(200).json(result.recordsets[0]);
-        } else {
-            res.status(404).json({ message: 'User not found!' });
-        }
-    }
-    catch (error) {
-        res.status(500).json({ error: 'Something went wrong!' });
-        console.log(error);
-    }
-    finally {
-        sql.close();
-    }
+//Create a new order
+export const createOrder = async (req, res) => {
+  try {
+    const { order_id, amount, status } = req.body;
+    const pool = await sql.connect(config.sql);
+      const result = await pool.request()
+      .input('order_id', sql.Int, order_id)
+      .input('amount', sql.Decimal(10, 2), total_amount)
+      .input('status', sql.VarChar(50), status)
+          .query("INSERT INTO Orders (order_id, total_amount, status) values (@order_id, @total_amount, @status)");
+      res.status(200).json({ message: 'order created successfully' });
+  } catch (error) {
+      res.status(500).json({ error: 'An error occurred while creating an order' });
+  } finally {
+      sql.close();
+  }
 };
 
-
-
-//Update a user
-export const updateUser = async (req, res) => {
-    try {
+//Update a order
+export const updateOrder = async (req, res) => {
+  try {
       const { id } = req.params;
-      const { username, email} = req.body; // Assuming the updated details are sent in the request body
-  
+      const { status } = req.body;
       let pool = await sql.connect(config.sql);
-      await pool
-        .request()
-        .input('id', sql.Int, id)
-        .input('username', sql.VarChar, username)
-        .input('email', sql.VarChar, email)
-        .query('UPDATE Users SET username = @username, email = @emailWHERE id = @id');
-  
-      res.status(200).json({ message: `User with ID ${id} updated successfully` });
-    } catch (error) {
-      res.status(500).json({ error: 'Something went wrong!' });
-    } finally {
+      await pool.request()
+          .input("id", sql.Int, id)
+          .input("status", sql.VarChar, status)
+          .query("UPDATE Orders SET status = @status WHERE id = @id;");
+      res.status(200).json({ message: 'order updated successfully' });
+  } catch (error) {
+      res.status(500).json({ error: 'An error occurred while updating an order' });
+  } finally {
       sql.close();
-    }
-  };
-
-// Delete a Order
-export const deleteUser = async (req, res) => {
-    try {
-      const { id } = req.params;
-      let pool = await sql.connect(config.sql);
-      const result = await pool
-        .request()
-        .input('id', sql.Int, id)
-        .query('DELETE FROM Customers WHERE id = @id');
-  
-      if (result.rowsAffected[0] === 0) {
-        res.status(404).json({ message: 'User not found!' });
-      } else {
-        res.status(200).json({ message: `User with ID ${id} deleted successfully` });
-      }
-    } catch (error) {
-      res.status(500).json({ error: 'Something went wrong!' });
-    } finally {
-      sql.close();
-    }
-  };
-// Create order
-
-export const Create = async (req, res) => {
-    const { order_id, id, quantity,product_id, email, status} = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10); // Use asynchronous bcrypt.hash instead of bcrypt.hashSync
-  
-    try {
-      let pool = await sql.connect(config.sql);
-      const result = await pool
-        .request()
-        .input('username', sql.VarChar, username)
-        .input('email', sql.VarChar, email)
-        .query(
-          'SELECT * FROM Customers WHERE username = @username OR email = @email'
-        );
-      const user = result.recordset[0];
-      if (user) {
-        res.status(409).json({ message: 'Username or email already exists!' });
-      } else {
-        await pool
-          .request()
-          .input('username', sql.VarChar, username)
-          .input('email', sql.VarChar, email)
-          .input('password', sql.VarChar, hashedPassword)
-        
-          .query(
-            'INSERT INTO Customers (username, password, email) VALUES (@username, @password, @email)'
-          );
-        res.status(200).json({ message: 'User created successfully!' });
-      }
-    } catch (error) {
-    //   res.status(500).json({ error: 'Something went wrong!' });
-    res.json(error.message)
-      console.log(error);
-    } finally {
-      sql.close();
-    }
-  
+  }
 };
 
-
-
+//Delete a order
+export const deleteOrder = async (req, res) => {
+  try {
+      const {order_id } = req.params;
+      await sql.connect(config.sql);
+      await sql.query`DELETE FROM Orders WHERE order_id = ${order_id}`;
+      res.status(200).json({ message: 'order deleted successfully' });
+  } catch (error) {
+      res.status(500).json({ error: 'An error occurred while deleting an order' });
+  } finally {
+      sql.close();
+  }
+};
