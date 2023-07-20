@@ -78,14 +78,15 @@ export const getProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { product_id } = req.params;
-        const { description, price} = req.body;
+        const { name, description, price,quantity} = req.body;
         let pool = await sql.connect(config.sql);
         await pool.request()
         .input ('product_id', sql.VarChar, product_id)
         .input ('name', sql.VarChar, name)
         .input('description', sql.VarChar, description)
         .input('price', sql.Float, price)
-        .query('UPDATE Product SET name = @name, description = @description, price = @price WHERE product_id =@product_id')
+        .input('quantity', sql.Int, quantity)
+        .query('UPDATE Product SET name = @name, description = @description, price = @price, quantity = @quantity WHERE product_id =@product_id')
         res.status(200).json({message: 'product updated successfully'})
         
     } catch (error) {

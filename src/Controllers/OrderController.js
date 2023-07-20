@@ -33,11 +33,15 @@ export const getOrder = async (req, res) => {
 //Create a new order
 export const createOrder = async (req, res) => {
   try {
-    const { order_id, amount, status } = req.body;
+    const { order_id,product_id, amount, quantity,id,email,status} = req.body;
     const pool = await sql.connect(config.sql);
       const result = await pool.request()
       .input('order_id', sql.Int, order_id)
-      .input('amount', sql.Decimal(10, 2), total_amount)
+      .input('product_id', sql.Int, product_id)
+      .input('amount', sql.Decimal(10, 2), amount)
+        .input('quantity', sql.Int, quantity)
+        .input('id', sql.Int, id)
+        .input('email', sql.VarChar(50), email)
       .input('status', sql.VarChar(50), status)
           .query("INSERT INTO Orders (order_id, total_amount, status) values (@order_id, @total_amount, @status)");
       res.status(200).json({ message: 'order created successfully' });
@@ -51,13 +55,13 @@ export const createOrder = async (req, res) => {
 //Update a order
 export const updateOrder = async (req, res) => {
   try {
-      const { id } = req.params;
+      const {order_id} = req.params;
       const { status } = req.body;
       let pool = await sql.connect(config.sql);
       await pool.request()
-          .input("id", sql.Int, id)
+          .input("order_id", sql.Int,order_id)
           .input("status", sql.VarChar, status)
-          .query("UPDATE Orders SET status = @status WHERE id = @id;");
+          .query("UPDATE Orders SET status = @status WHERE order_id = @order_id;");
       res.status(200).json({ message: 'order updated successfully' });
   } catch (error) {
       res.status(500).json({ error: 'An error occurred while updating an order' });

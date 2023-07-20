@@ -4,6 +4,8 @@ import config from "./src/db/Config.js";
 import userRoutes from "./src/Routes/UserRoutes.js";
 import productRoutes from "./src/Routes/ProductRoute.js";
 import orderRoutes from "./src/Routes/OrderRoute.js";
+import categoryRoutes from "./src/Routes/CategoryRoute.js";
+import stockRoutes from "./src/Routes/StockRoute.js";
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
 
@@ -33,6 +35,8 @@ app.use((req, res, next) => {
 userRoutes(app);
 productRoutes(app);
 orderRoutes(app);
+categoryRoutes(app);
+stockRoutes(app);
 
 
 

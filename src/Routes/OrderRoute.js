@@ -10,6 +10,10 @@ const orderRoutes = (app) => {
     .put(updateOrder)
     .delete(deleteOrder);
 
+    app.route("/order")
+    .post(createOrder);
+    
+
 }
 
 export default orderRoutes;
