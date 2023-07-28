@@ -6,6 +6,7 @@ import productRoutes from "./src/Routes/ProductRoute.js";
 import orderRoutes from "./src/Routes/OrderRoute.js";
 import categoryRoutes from "./src/Routes/CategoryRoute.js";
 import stockRoutes from "./src/Routes/StockRoute.js";
+import stripe from './src/Routes/StripeRoute.js';
 import jwt from 'jsonwebtoken'
 import cors from 'cors'
 
@@ -37,6 +38,7 @@ productRoutes(app);
 orderRoutes(app);
 categoryRoutes(app);
 stockRoutes(app);
+stripe(app);
 
 
 
